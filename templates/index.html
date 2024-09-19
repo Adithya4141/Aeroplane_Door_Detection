@@ -1,0 +1,185 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aeroplane Door Object Detection</title>
+    <style>
+        /* General styles for the page */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #4a90e2;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: #4a90e2;
+        }
+
+        /* Form styling */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        input[type="file"] {
+            padding: 10px;
+            background-color: #fff;
+            border: 2px solid #4a90e2;
+            border-radius: 5px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="file"]:hover {
+            border-color: #3b7dc2;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4a90e2;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #3b7dc2;
+        }
+
+        /* Container for images */
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            margin-top: 20px;
+            gap: 20px;
+        }
+
+        /* Individual image styling */
+        .image-container img {
+            max-width: 45%; /* Limit the size to half of the container width */
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        /* Hover effect for images */
+        .image-container img:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Footer styling */
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            color: #888;
+        }
+
+        /* Responsive layout for small screens */
+        @media (max-width: 768px) {
+            .image-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .image-container img {
+                max-width: 80%; /* Adjust image size for smaller screens */
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Aeroplane Door Object Detection</h1>
+
+    <!-- Form to upload the image -->
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" name="file" accept="image/*" id="inputImage" required>
+        <button type="submit">Upload and Predict</button>
+    </form>
+
+    <!-- Container for displaying input and result images side by side -->
+    <div class="image-container">
+        <!-- Display the uploaded image -->
+        <div>
+            <h2>Input Image</h2>
+            <img id="uploadedImage" src="#" alt="Uploaded Image" style="display: none;">
+        </div>
+
+        <!-- Display the result image -->
+        <div>
+            <h2>Result Image</h2>
+            <img id="resultImage" src="#" alt="Detected Objects" style="display: none;">
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 Aeroplane Door Object Detection | Powered by Tride Mobility</p>
+    </footer>
+
+    <script>
+        // Preview the uploaded image
+        document.getElementById('inputImage').onchange = function (event) {
+            const [file] = event.target.files;
+            if (file) {
+                const imageUrl = URL.createObjectURL(file);
+                document.getElementById('uploadedImage').src = imageUrl;
+                document.getElementById('uploadedImage').style.display = 'block';
+            }
+        };
+
+        // Handle form submission to send image to the server and receive result image
+        document.getElementById('uploadForm').onsubmit = function (event) {
+            event.preventDefault(); // Prevent default form submission behavior
+
+            const formData = new FormData();
+            const fileInput = document.getElementById('inputImage').files[0];
+            formData.append('file', fileInput);
+
+            // Send a POST request with the uploaded image to the server
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json()) // Parse JSON response
+            .then(data => {
+                if (data.result_image) {
+                    // Add a timestamp to the image URL to prevent caching
+                    const resultImageUrl = data.result_image.replace(/\\/g, '/') + '?t=' + new Date().getTime();
+                    document.getElementById('resultImage').src = resultImageUrl;
+                    document.getElementById('resultImage').style.display = 'block';
+                } else {
+                    alert('No result image found.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        };
+    </script>
+</body>
+</html>
